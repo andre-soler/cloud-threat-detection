@@ -47,3 +47,28 @@ resource "azurerm_key_vault_secret" "fake_api_key" {
   key_vault_id = azurerm_key_vault.victim.id
   depends_on   = [azurerm_role_assignment.kv_secrets_officer]
 }
+
+resource "azurerm_storage_account" "victim" {
+  name                            = "${var.prefix}st${random_string.suffix.result}"
+  resource_group_name             = azurerm_resource_group.main.name
+  location                        = azurerm_resource_group.main.location
+  account_tier                    = "Standard"
+  account_replication_type        = "LRS"
+  min_tls_version                 = "TLS1_2"
+  allow_nested_items_to_be_public = false
+  tags                            = var.tags
+}
+
+resource "azurerm_storage_container" "customer_data" {
+  name                  = "customer-data"
+  storage_account_id    = azurerm_storage_account.victim.id
+  container_access_type = "private"
+}
+
+resource "azurerm_storage_blob" "fake_customers" {
+  name                   = "customers-export.csv"
+  storage_account_name   = azurerm_storage_account.victim.name
+  storage_container_name = azurerm_storage_container.customer_data.name
+  type                   = "Block"
+  source_content         = "id,name,email\n1,Jane Doe,jane.doe@example.com\n2,John Roe,john.roe@example.com\n"
+}

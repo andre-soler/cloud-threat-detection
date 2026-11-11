@@ -31,3 +31,21 @@ resource "azurerm_monitor_diagnostic_setting" "key_vault" {
     category = "AuditEvent"
   }
 }
+
+resource "azurerm_monitor_diagnostic_setting" "storage_blob" {
+  name                       = "${var.prefix}-blob-to-law"
+  target_resource_id         = "${azurerm_storage_account.victim.id}/blobServices/default"
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.main.id
+
+  enabled_log {
+    category = "StorageRead"
+  }
+
+  enabled_log {
+    category = "StorageWrite"
+  }
+
+  enabled_log {
+    category = "StorageDelete"
+  }
+}
