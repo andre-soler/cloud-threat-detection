@@ -19,6 +19,20 @@ locals {
       tactics      = ["DefenseEvasion"]
       techniques   = ["T1562"]
     }
+    "05-managed-identity-fic-backdoor" = {
+      display_name = "Persistence: federated credential added to a managed identity"
+      description  = "A federated identity credential was added to a managed identity. MITRE ATT&CK T1098.001."
+      severity     = "High"
+      tactics      = ["Persistence", "PrivilegeEscalation"]
+      techniques   = ["T1098"]
+    }
+    "06-mass-blob-deletion" = {
+      display_name = "Impact: mass deletion of blobs"
+      description  = "One caller deleted 10 or more blobs within 5 minutes. MITRE ATT&CK T1485."
+      severity     = "High"
+      tactics      = ["Impact"]
+      techniques   = ["T1485"]
+    }
   }
 }
 

@@ -1,0 +1,5 @@
+AzureActivity
+| where OperationNameValue =~ "MICROSOFT.MANAGEDIDENTITY/USERASSIGNEDIDENTITIES/FEDERATEDIDENTITYCREDENTIALS/WRITE"
+| where ActivityStatusValue == "Success"
+| extend IngestedAt = ingestion_time()
+| project TimeGenerated, IngestedAt, Caller, CallerIpAddress, ResourceGroup, CredentialId = _ResourceId

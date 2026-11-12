@@ -1,0 +1,12 @@
+// T1485 - Data Destruction
+// One caller deleted 10 or more blobs within 5 minutes: the pattern of
+// ransomware or a destructive attacker wiping cloud storage.
+StorageBlobLogs
+| where OperationName == "DeleteBlob" and StatusText == "Success"
+| extend IngestedAt = ingestion_time(),
+         CallerIpAddress = tostring(split(CallerIpAddress, ":")[0]),
+         Caller = coalesce(RequesterUpn, RequesterObjectId, "account-key")
+| summarize TimeGenerated = max(TimeGenerated), IngestedAt = max(IngestedAt),
+            DeletedBlobs = dcount(ObjectKey), Sample = make_set(ObjectKey, 10)
+         by Caller, CallerIpAddress, AccountName, Window = bin(TimeGenerated, 5m)
+| where DeletedBlobs >= 10
