@@ -66,9 +66,8 @@ resource "azurerm_storage_container" "customer_data" {
 }
 
 resource "azurerm_storage_blob" "fake_customers" {
-  name                   = "customers-export.csv"
-  storage_account_name   = azurerm_storage_account.victim.name
-  storage_container_name = azurerm_storage_container.customer_data.name
-  type                   = "Block"
-  source_content         = "id,name,email\n1,Jane Doe,jane.doe@example.com\n2,John Roe,john.roe@example.com\n"
+  name                 = "customers-export.csv"
+  storage_container_id = azurerm_storage_container.customer_data.id
+  type                 = "Block"
+  source_content       = "id,name,email\n1,Jane Doe,jane.doe@example.com\n2,John Roe,john.roe@example.com\n"
 }
