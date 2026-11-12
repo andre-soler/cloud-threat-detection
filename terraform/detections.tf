@@ -18,11 +18,29 @@ resource "azurerm_sentinel_alert_rule_scheduled" "role_assignment" {
   tactics                    = ["PrivilegeEscalation", "Persistence"]
   techniques                 = ["T1098"]
 
+  entity_mapping {
+    entity_type = "Account"
+    field_mapping {
+      identifier  = "FullName"
+      column_name = "Caller"
+    }
+  }
+
+  entity_mapping {
+    entity_type = "IP"
+    field_mapping {
+      identifier  = "Address"
+      column_name = "CallerIpAddress"
+    }
+  }
+
   incident {
     create_incident_enabled = true
 
     grouping {
-      enabled = false
+      enabled                = true
+      lookback_duration      = "PT1H"
+      entity_matching_method = "AllEntities"
     }
   }
 }

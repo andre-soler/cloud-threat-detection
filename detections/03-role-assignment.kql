@@ -1,0 +1,8 @@
+// T1098.003 - Account Manipulation: Additional Cloud Roles
+// A new role assignment was created. Attackers grant themselves Owner or
+// data-plane roles to escalate privileges or keep access.
+AzureActivity
+| where OperationNameValue =~ "MICROSOFT.AUTHORIZATION/ROLEASSIGNMENTS/WRITE"
+| where ActivityStatusValue == "Success"
+| extend IngestedAt = ingestion_time()
+| project TimeGenerated, IngestedAt, Caller, CallerIpAddress, ResourceGroup, RoleAssignmentId = _ResourceId
