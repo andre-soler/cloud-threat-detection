@@ -1,0 +1,5 @@
+AzureActivity
+| where OperationNameValue =~ "MICROSOFT.INSIGHTS/DIAGNOSTICSETTINGS/DELETE"
+| where ActivityStatusValue == "Success"
+| extend IngestedAt = ingestion_time()
+| project TimeGenerated, IngestedAt, Caller, CallerIpAddress, ResourceGroup, DiagnosticSettingId = _ResourceId

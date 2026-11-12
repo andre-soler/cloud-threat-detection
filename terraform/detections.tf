@@ -2,21 +2,41 @@ locals {
   # Alert only on events ingested since the last run: late logs are still
   # caught (query_period covers 1h) and no event alerts twice.
   ingestion_filter = "| where IngestedAt > ago(5m)"
+
+  # One entry per detection. The key is also the .kql file name.
+  detections = {
+    "03-role-assignment" = {
+      display_name = "Privilege escalation: new role assignment"
+      description  = "A role assignment was created. MITRE ATT&CK T1098.003."
+      severity     = "High"
+      tactics      = ["PrivilegeEscalation", "Persistence"]
+      techniques   = ["T1098"]
+    }
+    "04-diagnostic-setting-deleted" = {
+      display_name = "Defense evasion: diagnostic setting deleted"
+      description  = "Logging was disabled on a resource or subscription. MITRE ATT&CK T1562.008."
+      severity     = "High"
+      tactics      = ["DefenseEvasion"]
+      techniques   = ["T1562"]
+    }
+  }
 }
 
-resource "azurerm_sentinel_alert_rule_scheduled" "role_assignment" {
-  name                       = "ctd-03-role-assignment"
+resource "azurerm_sentinel_alert_rule_scheduled" "rule" {
+  for_each = local.detections
+
+  name                       = "ctd-${each.key}"
   log_analytics_workspace_id = azurerm_sentinel_log_analytics_workspace_onboarding.main.workspace_id
-  display_name               = "Privilege escalation: new role assignment"
-  description                = "A role assignment was created. MITRE ATT&CK T1098.003."
-  severity                   = "High"
-  query                      = "${file("${path.module}/../detections/03-role-assignment.kql")}\n${local.ingestion_filter}"
+  display_name               = each.value.display_name
+  description                = each.value.description
+  severity                   = each.value.severity
+  query                      = "${file("${path.module}/../detections/${each.key}.kql")}\n${local.ingestion_filter}"
   query_frequency            = "PT5M"
   query_period               = "PT1H"
   trigger_operator           = "GreaterThan"
   trigger_threshold          = 0
-  tactics                    = ["PrivilegeEscalation", "Persistence"]
-  techniques                 = ["T1098"]
+  tactics                    = each.value.tactics
+  techniques                 = each.value.techniques
 
   entity_mapping {
     entity_type = "Account"
@@ -43,4 +63,9 @@ resource "azurerm_sentinel_alert_rule_scheduled" "role_assignment" {
       entity_matching_method = "AllEntities"
     }
   }
+}
+
+moved {
+  from = azurerm_sentinel_alert_rule_scheduled.role_assignment
+  to   = azurerm_sentinel_alert_rule_scheduled.rule["03-role-assignment"]
 }
